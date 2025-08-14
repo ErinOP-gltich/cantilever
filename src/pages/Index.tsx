@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, Sparkles, UploadCloud, ShieldCheck, Star, Building2, FileText, Layers, Boxes, Download, Filter, MapPin, ArrowRight, CheckCircle2, X, Menu, User, LogIn, Plus, ExternalLink, BookOpen } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // --- Demo data ---------------------------------------------------------------
 const CATEGORIES = [
@@ -81,29 +82,44 @@ const Tag = ({ children }: { children: React.ReactNode }) => (
 );
 
 const PillButton = ({ children, className = "", ...props }: { children: React.ReactNode; className?: string; [key: string]: any }) => (
-  <button
-    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium bg-black text-white hover:bg-gray-900 active:scale-[.99] transition ${className}`}
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium bg-black text-white hover:bg-gray-900 transition-all duration-200 hover-glow ${className}`}
     {...props}
   >
     {children}
-  </button>
+  </motion.button>
 );
 
 const GhostButton = ({ children, className = "", ...props }: { children: React.ReactNode; className?: string; [key: string]: any }) => (
-  <button
-    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition ${className}`}
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200 ${className}`}
     {...props}
   >
     {children}
-  </button>
+  </motion.button>
 );
 
 // --- Card -------------------------------------------------------------------
 function AssetCard({ asset, onOpen }: { asset: any; onOpen: (asset: any) => void }) {
   return (
-    <motion.div layout className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md transition">
+    <motion.div 
+      layout 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300"
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={asset.cover} alt={asset.title} className="h-full w-full object-cover group-hover:scale-105 transition" />
+        <motion.img 
+          src={asset.cover} 
+          alt={asset.title} 
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+        />
         <div className="absolute top-2 left-2 flex gap-1">
           {asset.cityTags.slice(0, 2).map((t: string) => (
             <Tag key={t}><MapPin className="h-3 w-3 mr-1" />{t}</Tag>
@@ -146,117 +162,170 @@ function AssetCard({ asset, onOpen }: { asset: any; onOpen: (asset: any) => void
 
 // --- Modal ------------------------------------------------------------------
 function Modal({ open, onClose, asset }: { open: boolean; onClose: () => void; asset: any }) {
-  if (!open || !asset) return null;
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative w-full max-w-3xl rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 dark:border-white/10 shadow-xl"
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10">
-          <div className="flex items-center gap-3">
-            <img src={asset.author.avatar} className="h-8 w-8 rounded-full" alt={asset.author.name} />
-            <div>
-              <div className="font-semibold">{asset.title}</div>
-              <div className="text-sm text-gray-500">by {asset.author.name}</div>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-0">
-          <div className="relative aspect-[4/3] md:aspect-auto">
-            <img src={asset.cover} className="h-full w-full object-cover" alt={asset.title} />
-          </div>
-          <div className="p-5">
-            <div className="flex flex-wrap gap-2">
-              {CREATOR_BADGES.map((b, i) => (
-                <Tag key={i}><b.icon className="h-3 w-3 mr-1" />{b.text}</Tag>
-              ))}
-            </div>
-            <div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-200">
-              <div className="flex items-center gap-2"><Layers className="h-4 w-4" /> Formats: {asset.formats.join(", ")}</div>
-              <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Cities: {asset.cityTags.join(", ")}</div>
-              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> License: Single-firm commercial</div>
-            </div>
-            <div className="mt-4">
-              <div className="font-semibold mb-2">Highlights</div>
-              <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-                {asset.highlights.map((h: string) => (
-                  <li key={h} className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 mt-0.5" /> {h}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-5 flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-semibold">₹{Math.round(asset.price * 85)}</div>
-                <div className="text-xs text-gray-500">${asset.price} (excl. taxes)</div>
+    <AnimatePresence>
+      {open && asset && (
+        <div className="fixed inset-0 z-50 grid place-items-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={onClose} 
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="relative w-full max-w-3xl rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 dark:border-white/10 shadow-2xl"
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10">
+              <div className="flex items-center gap-3">
+                <img src={asset.author.avatar} className="h-8 w-8 rounded-full" alt={asset.author.name} />
+                <div>
+                  <div className="font-semibold">{asset.title}</div>
+                  <div className="text-sm text-gray-500">by {asset.author.name}</div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <GhostButton><ExternalLink className="h-4 w-4" /> View creator</GhostButton>
-                <PillButton className="bg-blue-600 hover:bg-blue-700"><Download className="h-4 w-4" /> Purchase</PillButton>
+              <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose} 
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </motion.button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-0">
+              <div className="relative aspect-[4/3] md:aspect-auto">
+                <img src={asset.cover} className="h-full w-full object-cover" alt={asset.title} />
+              </div>
+              <div className="p-5">
+                <div className="flex flex-wrap gap-2">
+                  {CREATOR_BADGES.map((b, i) => (
+                    <Tag key={i}><b.icon className="h-3 w-3 mr-1" />{b.text}</Tag>
+                  ))}
+                </div>
+                <div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-200">
+                  <div className="flex items-center gap-2"><Layers className="h-4 w-4" /> Formats: {asset.formats.join(", ")}</div>
+                  <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Cities: {asset.cityTags.join(", ")}</div>
+                  <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> License: Single-firm commercial</div>
+                </div>
+                <div className="mt-4">
+                  <div className="font-semibold mb-2">Highlights</div>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+                    {asset.highlights.map((h: string) => (
+                      <li key={h} className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 mt-0.5" /> {h}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-5 flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-semibold">₹{Math.round(asset.price * 85)}</div>
+                    <div className="text-xs text-gray-500">${asset.price} (excl. taxes)</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <GhostButton><ExternalLink className="h-4 w-4" /> View creator</GhostButton>
+                    <PillButton className="bg-blue-600 hover:bg-blue-700"><Download className="h-4 w-4" /> Purchase</PillButton>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }
 
 // --- Header / Nav -----------------------------------------------------------
 function Navbar({ onToggleMobile }: { onToggleMobile: () => void }) {
   return (
-    <div className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-neutral-950/60 border-b border-gray-200/70 dark:border-white/10">
+    <motion.div 
+      initial={{ y: -10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-neutral-950/60 border-b border-gray-200/70 dark:border-white/10"
+    >
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
-            <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5" onClick={onToggleMobile}><Menu className="h-5 w-5" /></button>
-            <div className="inline-flex items-center gap-2">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors" 
+              onClick={onToggleMobile}
+            >
+              <Menu className="h-5 w-5" />
+            </motion.button>
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="inline-flex items-center gap-2 cursor-pointer"
+            >
               <div className="h-7 w-7 grid place-items-center rounded-xl bg-blue-600 text-white font-bold">C</div>
               <span className="font-semibold">Cantilever</span>
-            </div>
+            </motion.div>
             <nav className="hidden md:flex items-center gap-6 ml-8 text-sm text-gray-600 dark:text-gray-300">
-              <a href="#browse" className="hover:text-gray-900 dark:hover:text-white">Browse</a>
-              <a href="#creators" className="hover:text-gray-900 dark:hover:text-white">Creators</a>
-              <a href="#pricing" className="hover:text-gray-900 dark:hover:text-white">Pricing</a>
-              <a href="#faq" className="hover:text-gray-900 dark:hover:text-white">FAQ</a>
+              <a href="#browse" className="hover:text-gray-900 dark:hover:text-white transition-colors story-link">Browse</a>
+              <a href="#creators" className="hover:text-gray-900 dark:hover:text-white transition-colors story-link">Creators</a>
+              <a href="#pricing" className="hover:text-gray-900 dark:hover:text-white transition-colors story-link">Pricing</a>
+              <a href="#faq" className="hover:text-gray-900 dark:hover:text-white transition-colors story-link">FAQ</a>
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <GhostButton><LogIn className="h-4 w-4" /> Sign in</GhostButton>
             <PillButton className="bg-blue-600 hover:bg-blue-700"><Plus className="h-4 w-4" /> Become a seller</PillButton>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
   return (
-    <div className="md:hidden fixed inset-0 z-40">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="absolute top-0 left-0 right-0 rounded-b-3xl bg-white dark:bg-neutral-950 p-4 border-b border-gray-200 dark:border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2">
-            <div className="h-7 w-7 grid place-items-center rounded-xl bg-blue-600 text-white font-bold">C</div>
-            <span className="font-semibold">Cantilever</span>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"><X className="h-5 w-5" /></button>
+    <AnimatePresence>
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60" 
+            onClick={onClose} 
+          />
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="absolute top-0 left-0 right-0 rounded-b-3xl bg-white dark:bg-neutral-950 p-4 border-b border-gray-200 dark:border-white/10"
+          >
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-2">
+                <div className="h-7 w-7 grid place-items-center rounded-xl bg-blue-600 text-white font-bold">C</div>
+                <span className="font-semibold">Cantilever</span>
+              </div>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onClose} 
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </motion.button>
+            </div>
+            <div className="mt-4 grid gap-2 text-sm">
+              <a href="#browse" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Browse</a>
+              <a href="#creators" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Creators</a>
+              <a href="#pricing" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Pricing</a>
+              <a href="#faq" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>FAQ</a>
+            </div>
+          </motion.div>
         </div>
-        <div className="mt-4 grid gap-2 text-sm">
-          <a href="#browse" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Browse</a>
-          <a href="#creators" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Creators</a>
-          <a href="#pricing" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>Pricing</a>
-          <a href="#faq" className="px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5" onClick={onClose}>FAQ</a>
-        </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -268,18 +337,38 @@ function Hero({ query, setQuery }: { query: string; setQuery: (value: string) =>
       <div className="mx-auto max-w-7xl px-4 py-14 md:py-20">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <motion.h1 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-3xl md:text-5xl font-semibold leading-tight">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-3xl md:text-5xl font-semibold leading-tight"
+            >
               The marketplace for architects.
             </motion.h1>
-            <p className="mt-4 text-gray-600 dark:text-gray-300 text-base md:text-lg">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="mt-4 text-gray-600 dark:text-gray-300 text-base md:text-lg"
+            >
               Find <b>BIM families</b>, <b>detail libraries</b>, <b>spec templates</b> and <b>render packs</b> that save hours per project—curated and code-tagged.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+            </motion.p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="mt-6 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-300"
+            >
               <div className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Verified creators</div>
               <div className="inline-flex items-center gap-2"><Building2 className="h-4 w-4" /> Local code tags</div>
               <div className="inline-flex items-center gap-2"><Download className="h-4 w-4" /> Instant delivery</div>
-            </div>
-            <div className="mt-8 flex gap-2">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+              className="mt-8 flex gap-2"
+            >
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -292,12 +381,24 @@ function Hero({ query, setQuery }: { query: string; setQuery: (value: string) =>
               <PillButton className="bg-blue-600 hover:bg-blue-700">
                 <Filter className="h-4 w-4" /> Filters
               </PillButton>
-            </div>
+            </motion.div>
           </div>
-          <div className="md:block hidden">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="md:block hidden"
+          >
             <div className="grid grid-cols-2 gap-4">
-              {ASSETS.slice(0, 4).map((a) => (
-                <motion.div key={a.id} whileHover={{ y: -4 }} className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur">
+              {ASSETS.slice(0, 4).map((a, index) => (
+                <motion.div 
+                  key={a.id} 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2 + index * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -8, scale: 1.05 }} 
+                  className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur hover-scale"
+                >
                   <img src={a.cover} className="h-36 w-full object-cover" alt={a.title} />
                   <div className="p-3">
                     <div className="text-sm font-medium line-clamp-1">{a.title}</div>
@@ -306,7 +407,7 @@ function Hero({ query, setQuery }: { query: string; setQuery: (value: string) =>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
@@ -334,8 +435,10 @@ function Catalogue({ query, activeCat, setActiveCat, onOpen }: {
         <h2 className="text-xl md:text-2xl font-semibold">Browse assets</h2>
         <div className="hidden md:flex gap-2">
           {CATEGORIES.map(({ key, label, icon: Icon }) => (
-            <button
+            <motion.button
               key={key}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setActiveCat(key === activeCat ? null : key)}
               className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm border transition ${
                 activeCat === key
@@ -344,14 +447,16 @@ function Catalogue({ query, activeCat, setActiveCat, onOpen }: {
               }`}
             >
               <Icon className="h-4 w-4" /> {label}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
       <div className="md:hidden flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
         {CATEGORIES.map(({ key, label, icon: Icon }) => (
-          <button
+          <motion.button
             key={key}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActiveCat(key === activeCat ? null : key)}
             className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm border transition ${
               activeCat === key
@@ -360,7 +465,7 @@ function Catalogue({ query, activeCat, setActiveCat, onOpen }: {
             }`}
           >
             <Icon className="h-4 w-4" /> {label}
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -370,11 +475,23 @@ function Catalogue({ query, activeCat, setActiveCat, onOpen }: {
           <div className="text-sm">Try a different search term or category.</div>
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((a) => (
-            <AssetCard key={a.id} asset={a} onOpen={onOpen} />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+          {filtered.map((a, index) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+            >
+              <AssetCard asset={a} onOpen={onOpen} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </section>
   );
@@ -423,7 +540,10 @@ function Pricing() {
       <h2 className="text-2xl md:text-3xl font-semibold text-center">Simple pricing</h2>
       <p className="mt-3 text-center text-gray-600 dark:text-gray-300">Buy once, use forever. Optional Pro plan for teams.</p>
       <div className="mt-8 grid md:grid-cols-3 gap-6">
-        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-6 bg-white dark:bg-neutral-950">
+        <motion.div 
+          whileHover={{ y: -4 }}
+          className="rounded-3xl border border-gray-200 dark:border-white/10 p-6 bg-white dark:bg-neutral-950"
+        >
           <div className="text-sm font-medium text-gray-500">Marketplace</div>
           <div className="mt-1 text-3xl font-semibold">Pay per asset</div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">From ₹500–₹4,500 per asset depending on complexity.</p>
@@ -433,8 +553,11 @@ function Pricing() {
             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Instant download</li>
           </ul>
           <PillButton className="mt-6 w-full bg-blue-600 hover:bg-blue-700">Browse assets</PillButton>
-        </div>
-        <div className="rounded-3xl border-2 border-blue-600 p-6 bg-gradient-to-b from-blue-50 to-white dark:from-white/5 dark:to-transparent">
+        </motion.div>
+        <motion.div 
+          whileHover={{ y: -4 }}
+          className="rounded-3xl border-2 border-blue-600 p-6 bg-gradient-to-b from-blue-50 to-white dark:from-white/5 dark:to-transparent"
+        >
           <div className="text-sm font-medium text-blue-600">Pro (Teams)</div>
           <div className="mt-1 text-3xl font-semibold">₹1,999 / user / mo</div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Shared seats, private catalogs, and admin controls.</p>
@@ -444,8 +567,11 @@ function Pricing() {
             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Priority support</li>
           </ul>
           <PillButton className="mt-6 w-full bg-blue-600 hover:bg-blue-700">Start free trial</PillButton>
-        </div>
-        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-6 bg-white dark:bg-neutral-950">
+        </motion.div>
+        <motion.div 
+          whileHover={{ y: -4 }}
+          className="rounded-3xl border border-gray-200 dark:border-white/10 p-6 bg-white dark:bg-neutral-950"
+        >
           <div className="text-sm font-medium text-gray-500">Creator</div>
           <div className="mt-1 text-3xl font-semibold">Up to 85% rev share</div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Instant payouts, watermarking, license controls.</p>
@@ -455,7 +581,7 @@ function Pricing() {
             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Fast review SLAs</li>
           </ul>
           <PillButton className="mt-6 w-full">Become a seller</PillButton>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -479,11 +605,18 @@ function FAQ() {
         },{
           q: "How do payouts work for creators?",
           a: "Instant payouts to Indian bank accounts via supported processors after each sale.",
-        }].map((f) => (
-          <div key={f.q} className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-neutral-950">
+        }].map((f, index) => (
+          <motion.div 
+            key={f.q}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            viewport={{ once: true }}
+            className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-neutral-950"
+          >
             <div className="font-medium">{f.q}</div>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{f.a}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>
@@ -504,9 +637,9 @@ function Footer() {
         <div>
           <div className="font-medium">Product</div>
           <ul className="mt-3 grid gap-2 text-gray-600 dark:text-gray-300">
-            <li><a href="#browse">Browse</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#browse" className="story-link">Browse</a></li>
+            <li><a href="#pricing" className="story-link">Pricing</a></li>
+            <li><a href="#faq" className="story-link">FAQ</a></li>
           </ul>
         </div>
         <div>
