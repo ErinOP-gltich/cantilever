@@ -89,6 +89,19 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			backgroundImage: {
+				'gradient-hero': 'var(--gradient-hero)'
+			},
+			boxShadow: {
+				'card': 'var(--shadow-card)',
+				'card-hover': 'var(--shadow-card-hover)'
+			},
+			backdropBlur: {
+				'smooth': 'var(--backdrop-blur)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)'
 			}
 		}
 	},

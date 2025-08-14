@@ -38,6 +38,13 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Enhanced design tokens for marketplace */
+    --gradient-hero: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(16,185,129,0.10) 100%);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --backdrop-blur: blur(12px);
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
